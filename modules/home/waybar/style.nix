@@ -4,18 +4,15 @@ let
     font = "Maple Mono";
     font_size = "18px";
     font_weight = "bold";
-    text_color = "#FBF1C7";
-    background_0 = "#1D2021";
-    background_1 = "#282828";
-    border_color = "#A89984";
-    red = "#CC241D";
-    green = "#98971A";
-    yellow = "#FABD2F";
-    blue = "#458588";
-    magenta = "#B16286";
-    cyan = "#689D6A";
-    orange = "#D65D0E";
-    orange_bright = "#FE8019";
+    text_color = "#E0F7FF";
+    background_0 = "rgba(5, 4, 20, 0.92)";
+    background_1 = "rgba(9, 2, 24, 0.8)";
+    border_color = "#00F5FF";
+    accent_cyan = "#00F5FF";
+    accent_magenta = "#FF008C";
+    accent_purple = "#7B5CFF";
+    accent_orange = "#FF6F00";
+    glow = "0 0 12px rgba(0, 245, 255, 0.45)";
     opacity = "1";
     indicator_height = "2px";
   };
@@ -34,13 +31,15 @@ in
     }
 
     window#waybar {
-      background: ${background_1};
+      background: linear-gradient(90deg, rgba(5, 4, 20, 0.92) 0%, rgba(12, 0, 45, 0.75) 100%);
       border-top: 1px solid ${border_color};
+      box-shadow: ${glow};
     }
 
     tooltip {
       background: ${background_1};
       border: 1px solid ${border_color};
+      box-shadow: ${glow};
     }
     tooltip label {
       margin: 5px;
@@ -51,25 +50,30 @@ in
       padding-left: 15px;
     }
     #workspaces button {
-      color: ${yellow};
+      color: ${accent_purple};
       padding-left:  5px;
       padding-right: 5px;
       margin-right: 10px;
+      background: transparent;
+      border-bottom: 2px solid transparent;
     }
     #workspaces button.empty {
       color: ${text_color};
     }
     #workspaces button.active {
-      color: ${orange_bright};
+      color: ${accent_cyan};
+      border-bottom: 2px solid ${accent_magenta};
     }
 
     #clock {
       color: ${text_color};
+      text-shadow: ${glow};
     }
 
     #tray {
       margin-left: 10px;
       color: ${text_color};
+      text-shadow: ${glow};
     }
     #tray menu {
       background: ${background_1};
@@ -81,10 +85,14 @@ in
     }
 
     #pulseaudio, #network, #cpu, #memory, #disk, #battery, #language, #custom-notification, #custom-power-menu {
-      padding-left: 5px;
-      padding-right: 5px;
-      margin-right: 10px;
+      padding-left: 12px;
+      padding-right: 12px;
+      margin-right: 14px;
       color: ${text_color};
+      background: rgba(12, 0, 45, 0.55);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      box-shadow: ${glow};
     }
 
     #pulseaudio, #language, #custom-notification {
@@ -92,16 +100,18 @@ in
     }
 
     #custom-power-menu {
-      padding-right: 2px;
-      margin-right: 5px;
+      padding-right: 6px;
+      margin-right: 9px;
+      border: 1px solid ${accent_magenta};
     }
 
     #custom-launcher {
-      font-size: 20px;
-      color: ${text_color};
+      font-size: 22px;
+      color: ${accent_cyan};
       font-weight: bold;
-      margin-left: 15px;
-      padding-right: 10px;
+      margin-left: 18px;
+      padding-right: 12px;
+      text-shadow: ${glow};
     }
   '';
 }
