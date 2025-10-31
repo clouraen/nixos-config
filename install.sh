@@ -4,7 +4,7 @@
 #   Initialisation   #
 #--------------------#
 
-CURRENT_USERNAME='frostphoenix'
+CURRENT_USERNAME='developer'
 
 RESET=$(tput sgr0)
 WHITE=$(tput setaf 7)
