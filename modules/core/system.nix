@@ -28,6 +28,18 @@
   environment.systemPackages = with pkgs; [
     wget
     git
+    curl
+    vim
+    gcc
+    gnumake
+    cmake
+    pkg-config
+    python311Full
+    nodejs_20
+    rustup
+    go
+    aider-chat
+    codex
   ];
 
   time.timeZone = "Europe/Paris";
