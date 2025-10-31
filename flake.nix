@@ -32,6 +32,11 @@
     { nixpkgs, self, ... }@inputs:
     let
       username = "developer";
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
       lib = nixpkgs.lib;
       supportedSystems = [
         "x86_64-linux"
