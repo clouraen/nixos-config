@@ -2,11 +2,11 @@
   description = "Cyberpunk-styled NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nur.url = "github:nix-community/NUR";
 
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -38,33 +38,71 @@
         config.allowUnfree = true;
       };
       lib = nixpkgs.lib;
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      mkPackages = system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          customPackages = import ./pkgs {
+            inherit inputs pkgs system;
+          };
+        in
+        customPackages // {
+          default = customPackages.codex;
+        };
+
+      hosts = [
+        {
+          name = "desktop";
+          system = "x86_64-linux";
+          modulePath = ./hosts/desktop;
+        }
+        {
+          name = "laptop";
+          system = "x86_64-linux";
+          modulePath = ./hosts/laptop;
+        }
+        {
+          name = "vm";
+          system = "x86_64-linux";
+          modulePath = ./hosts/vm;
+        }
+        {
+          name = "desktop-apple";
+          system = "aarch64-linux";
+          modulePath = ./hosts/desktop-apple;
+        }
+        {
+          name = "laptop-apple";
+          system = "aarch64-linux";
+          modulePath = ./hosts/laptop-apple;
+        }
+        {
+          name = "vm-apple";
+          system = "aarch64-linux";
+          modulePath = ./hosts/vm-apple;
+        }
+      ];
+
+      mkHost = { name, system, modulePath }:
+        lib.nameValuePair name (nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ modulePath ];
+          specialArgs = {
+            host = name;
+            inherit self inputs username;
+          };
+        });
     in
     {
-      nixosConfigurations = {
-        desktop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/desktop ];
-          specialArgs = {
-            host = "desktop";
-            inherit self inputs username;
-          };
-        };
-        laptop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/laptop ];
-          specialArgs = {
-            host = "laptop";
-            inherit self inputs username;
-          };
-        };
-        vm = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/vm ];
-          specialArgs = {
-            host = "vm";
-            inherit self inputs username;
-          };
-        };
-      };
+      packages = lib.genAttrs supportedSystems mkPackages;
+
+      nixosConfigurations = lib.listToAttrs (map mkHost hosts);
     };
 }
