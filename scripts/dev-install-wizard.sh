@@ -9,8 +9,6 @@ HOME_DEFAULT_NIX="$REPO_ROOT/modules/home/default.nix"
 HYPR_EXEC_ONCE="$REPO_ROOT/modules/home/hyprland/exec-once.nix"
 HYPR_BINDS="$REPO_ROOT/modules/home/hyprland/binds.nix"
 STEAM_NIX="$REPO_ROOT/modules/core/steam.nix"
-HARDWARE_NIX="$REPO_ROOT/modules/core/hardware.nix"
-XSERVER_NIX="$REPO_ROOT/modules/core/xserver.nix"
 
 if [[ ! -f "$REPO_ROOT/flake.nix" ]]; then
   echo "[ERROR] Please run this script from inside the nixos-config repository" >&2
@@ -164,65 +162,6 @@ apply_dev_bundles() {
   done
 }
 
-prompt_nvidia_driver() {
-  whiptail --yesno "Install proprietary NVIDIA drivers (requires reboot after rebuild)?" 10 75 --title "GPU Drivers"
-}
-
-enable_nvidia_driver() {
-  log_info "Enabling proprietary NVIDIA driver configuration"
-
-  if ! grep -Fq "# dev-install-wizard:nvidia" "$HARDWARE_NIX"; then
-    python3 - "$HARDWARE_NIX" <<'PY'
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-text = path.read_text()
-marker = "  hardware.enableRedistributableFirmware = true;\n}"
-snippet = "  # dev-install-wizard:nvidia\n" \
-          "  hardware.nvidia = {\n" \
-          "    modesetting.enable = true;\n" \
-          "    powerManagement.enable = true;\n" \
-          "    open = false;\n" \
-          "    nvidiaSettings = true;\n" \
-          "    package = pkgs.linuxPackages.nvidiaPackages.production;\n" \
-          "  };\n"
-
-if snippet not in text:
-    if marker not in text:
-        raise SystemExit("Unable to find insertion marker in hardware.nix")
-    text = text.replace(marker, snippet + marker)
-    path.write_text(text)
-PY
-    log_success "Configured NVIDIA driver block in hardware.nix"
-  else
-    log_info "NVIDIA driver block already present in hardware.nix"
-  fi
-
-  if ! grep -Fq 'videoDrivers = [ "nvidia" ];' "$XSERVER_NIX"; then
-    python3 - "$XSERVER_NIX" <<'PY'
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-text = path.read_text()
-needle = '      xkb.layout = "us,fr";\n'
-insertion = '      videoDrivers = [ "nvidia" ];\n'
-
-if insertion not in text:
-    if needle not in text:
-        raise SystemExit("Unable to find xkb.layout marker in xserver.nix")
-    text = text.replace(needle, needle + insertion)
-    path.write_text(text)
-PY
-    log_success "Pinned NVIDIA video driver in xserver.nix"
-  else
-    log_info "NVIDIA video driver already set in xserver.nix"
-  fi
-
-  ensure_package "nvidia-settings"
-}
-
 ensure_line_present() {
   local file="$1"
   local expected="$2"
@@ -317,18 +256,12 @@ main() {
   local bundles
   bundles=$(prompt_dev_bundles)
 
-  local nvidia_choice="No"
-  if prompt_nvidia_driver; then
-    enable_nvidia_driver
-    nvidia_choice="Yes"
-  fi
-
   update_username "$username"
   apply_dev_bundles "$bundles"
   enable_cyberpunk_stack
   copy_hardware_config "$host"
 
-  whiptail --title "Summary" --msgbox "Host: $host\nUser: $username\nBundles: ${bundles//\"/}\nNVIDIA drivers: $nvidia_choice" 11 60
+  whiptail --title "Summary" --msgbox "Host: $host\nUser: $username\nBundles: ${bundles//\"/}" 10 60
 
   run_rebuild "$host"
 }

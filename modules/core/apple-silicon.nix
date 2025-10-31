@@ -1,10 +1,4 @@
-{ lib, options, pkgs, ... }:
-let
-  hasAsahiModule = lib.hasAttrByPath [ "hardware" "asahi" ] options;
-  asahiPackages =
-    lib.optionals (pkgs ? asahi-fwextract) [ pkgs.asahi-fwextract ]
-    ++ lib.optionals (pkgs ? asahi-scripts) [ pkgs.asahi-scripts ];
-in
+{ lib, pkgs, ... }:
 {
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
 
@@ -22,25 +16,22 @@ in
     kernelModules = [ "apple_mca" ];
   };
 
-  hardware =
-    {
-      opengl = {
-        enable = true;
-        driSupport = true;
-        driSupport32Bit = lib.mkDefault false;
-      };
-    }
-    // lib.optionalAttrs hasAsahiModule {
-      asahi =
-        {
-          enable = true;
-          withRust = true;
-          setupAsahiSound = true;
-        }
-        // lib.optionalAttrs (pkgs ? asahi-fwextract) {
-          gpuFirmwarePackage = lib.mkDefault pkgs.asahi-fwextract;
-        };
+  hardware = {
+    asahi = {
+      enable = true;
+      withRust = true;
+      setupAsahiSound = true;
+      gpuFirmwarePackage = lib.mkDefault pkgs.asahi-fwextract;
     };
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = lib.mkDefault false;
+    };
+  };
 
-  environment.systemPackages = lib.mkAfter asahiPackages;
+  environment.systemPackages = lib.mkAfter (with pkgs; [
+    asahi-fwextract
+    asahi-scripts
+  ]);
 }
