@@ -33,6 +33,13 @@
       "wheel"
     ];
     shell = pkgs.zsh;
+    initialHashedPassword =
+      "$6$XurOPO.pqMVf6U5y$b90io9owhypGJtWjpF7odbhidt1i5QKf4UgrqzOkPOh6zCFGhNLxQd6zqvM1iBDa62UNfzYvx2aDLHoexGQLP/";
   };
   nix.settings.allowed-users = [ "${username}" ];
+
+  users.users.root = {
+    initialHashedPassword =
+      "$6$XurOPO.pqMVf6U5y$b90io9owhypGJtWjpF7odbhidt1i5QKf4UgrqzOkPOh6zCFGhNLxQd6zqvM1iBDa62UNfzYvx2aDLHoexGQLP/";
+  };
 }
